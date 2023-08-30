@@ -3,8 +3,12 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -13,7 +17,7 @@ import (
 )
 
 func ProduceMessage(ctx context.Context, brokerUrl []string, topic string, data string, idx int, successChan chan int, failChan chan int) {
-	log.Println("Start sending message ", idx)
+	log.Printf("Start sending message to topic: %s", topic)
 	w := &kafka.Writer{
 		Addr:  kafka.TCP(brokerUrl...),
 		Topic: topic,
@@ -63,7 +67,7 @@ func worker(ctx context.Context, workers chan int, brokers []string, topic strin
 }
 
 // produce n messages
-func ProduceMessages(ctx context.Context, brokers []string, topic string, message string, n int) {
+func ProduceMessages(ctx context.Context, brokers []string, topic string, message string, n int) Response {
 	workers := make(chan int, 1000)
 
 	successChan := make(chan int)
@@ -90,12 +94,16 @@ func ProduceMessages(ctx context.Context, brokers []string, topic string, messag
 		}
 	}
 
-	fmt.Println("Success: ", successCounter)
-	fmt.Println("Fail: ", failedCounter)
+	response := Response{
+		TotalMessage: n,
+		Success:      successCounter,
+		Failed:       failedCounter,
+	}
 
+	return response
 }
 
-func main() {
+func cmd() {
 	brokerUrl := StringPrompt("Enter broker url (Left empty for default value: 172.17.0.1:9092) >>")
 	if brokerUrl == "" {
 		brokerUrl = "172.17.0.1:9092"
@@ -124,5 +132,81 @@ func main() {
 			}
 		}
 		produceMessage = ""
+	}
+}
+
+type RequestBody struct {
+	Topic    string `json:"topic"`
+	Message  string `json:"message"`
+	Quantity int    `json:"quantity"`
+}
+
+type Response struct {
+	TotalMessage int `json:"totalMessage"`
+	Success      int `json:"success"`
+	Failed       int `json:"failed"`
+}
+
+func PublishMessageHandler(w http.ResponseWriter, r *http.Request) {
+	// ctx := r.Context()
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Could not read body: %s\n", err)
+		return
+	}
+
+	var requestBody RequestBody
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		log.Printf("Unmarshal body failed %+v", err)
+		return
+	}
+
+	res := ProduceMessages(context.Background(), []string{"172.17.0.1:9092"}, requestBody.Topic, requestBody.Message, requestBody.Quantity)
+
+	b, err := json.Marshal(res)
+	if err != nil {
+		log.Printf("Marshal body failed %+v", err)
+		return
+	}
+
+	io.WriteString(w, string(b))
+}
+
+func ListTopic() []string {
+	topics := []string{}
+	conn, err := kafka.Dial("tcp", "172.17.0.1:9092")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	partitions, err := conn.ReadPartitions()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	m := map[string]struct{}{}
+
+	for _, p := range partitions {
+		m[p.Topic] = struct{}{}
+	}
+
+	for k := range m {
+		topics = append(topics, k)
+	}
+	return topics
+}
+
+func main() {
+	log.Println("Start program")
+	go func() {
+		topics := ListTopic()
+		log.Println("List topic ", topics)
+	}()
+	http.HandleFunc("/", PublishMessageHandler)
+
+	if err := http.ListenAndServe(":9000", nil); err != nil {
+		log.Fatalln("Failed to listen on port 9000 ", err)
 	}
 }
