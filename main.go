@@ -100,6 +100,7 @@ func ProduceMessages(ctx context.Context, brokers []string, topic string, messag
 		Failed:       failedCounter,
 	}
 
+	log.Printf("response: %+v", response)
 	return response
 }
 
@@ -161,6 +162,7 @@ func PublishMessageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Unmarshal body failed %+v", err)
 		return
 	}
+	log.Printf("body: %+v", requestBody)
 
 	res := ProduceMessages(context.Background(), []string{"172.17.0.1:9092"}, requestBody.Topic, requestBody.Message, requestBody.Quantity)
 
@@ -169,7 +171,7 @@ func PublishMessageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Marshal body failed %+v", err)
 		return
 	}
-
+	w.WriteHeader(http.StatusCreated)
 	io.WriteString(w, string(b))
 }
 
