@@ -175,37 +175,8 @@ func PublishMessageHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(b))
 }
 
-func ListTopic() []string {
-	topics := []string{}
-	conn, err := kafka.Dial("tcp", "172.17.0.1:9092")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer conn.Close()
-
-	partitions, err := conn.ReadPartitions()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	m := map[string]struct{}{}
-
-	for _, p := range partitions {
-		m[p.Topic] = struct{}{}
-	}
-
-	for k := range m {
-		topics = append(topics, k)
-	}
-	return topics
-}
-
 func main() {
 	log.Println("Start program")
-	go func() {
-		topics := ListTopic()
-		log.Println("List topic ", topics)
-	}()
 	http.HandleFunc("/", PublishMessageHandler)
 
 	if err := http.ListenAndServe(":9000", nil); err != nil {
