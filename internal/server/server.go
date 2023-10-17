@@ -88,7 +88,7 @@ func (s *Server) Run() {
 
 	runHTTP := func(wg *sync.WaitGroup) {
 		defer wg.Done()
-		log.Println((fmt.Sprintf("Server listening on port: %s ...", s.Cfg.Server.Port)))
+		log.Printf("Server listening on port: %s ...", s.Cfg.Server.Port)
 
 		if err := http.ListenAndServe(fmt.Sprintf(":%s", s.Cfg.Server.Port), s.router); err != nil {
 			log.Fatal("ListenAndServe error: ", err)

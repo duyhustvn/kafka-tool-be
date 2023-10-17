@@ -5,6 +5,7 @@ import (
 	"kafkatool/internal/config"
 	"kafkatool/internal/logger"
 	"kafkatool/internal/metrics"
+	kafkamodel "kafkatool/internal/modules/kafka/models"
 	kafkasvc "kafkatool/internal/modules/kafka/service"
 	"net/http"
 
@@ -31,7 +32,10 @@ func (handler *kafkaHandlers) ListTopicHandler() func(http.ResponseWriter, *http
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
+		res := kafkamodel.ListTopicResponse{
+			Topics: topics,
+		}
 
-		common.ResponseOk(w, http.StatusOK, topics)
+		common.ResponseOk(w, http.StatusOK, res)
 	}
 }
