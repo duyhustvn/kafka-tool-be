@@ -14,12 +14,12 @@ import (
 type healthcheckHandlers struct {
 	router           *mux.Router
 	log              logger.Logger
-	cfg              *config.Config
+	cfg              config.Config
 	metricsCollector metrics.IMetricCollector
 	healthCheckSvc   *healthchecksvc.HealthCheckSvc
 }
 
-func NewHealthCheckHandlers(router *mux.Router, log logger.Logger, cfg *config.Config, healthcheckSvc *healthchecksvc.HealthCheckSvc, metricCollector metrics.IMetricCollector) *healthcheckHandlers {
+func NewHealthCheckHandlers(router *mux.Router, log logger.Logger, cfg config.Config, healthcheckSvc *healthchecksvc.HealthCheckSvc, metricCollector metrics.IMetricCollector) *healthcheckHandlers {
 	return &healthcheckHandlers{router: router, log: log, cfg: cfg, healthCheckSvc: healthcheckSvc, metricsCollector: metricCollector}
 }
 

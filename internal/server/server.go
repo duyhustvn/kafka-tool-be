@@ -23,7 +23,7 @@ import (
 type Server struct {
 	router           *mux.Router
 	kafkaConn        *kafka.Conn
-	Cfg              *config.Config
+	Cfg              config.Config
 	log              logger.Logger
 	metricsCollector metrics.IMetricCollector
 }
@@ -54,7 +54,7 @@ func GetApp() *Server {
 
 	return &Server{
 		router:    mux.NewRouter(),
-		Cfg:       env,
+		Cfg:       *env,
 		log:       log,
 		kafkaConn: kafkaConn,
 	}
@@ -82,7 +82,10 @@ func (s *Server) Run() {
 	healthcheckHandler := healthcheckrest.NewHealthCheckHandlers(apiRouter, s.log, s.Cfg, healthcheckSvc, s.metricsCollector)
 	healthcheckHandler.RegisterRouter()
 
-	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, s.log)
+	kafkaProducer := kafkaclient.NewProducer(s.Cfg.Kafka.Brokers, s.log)
+	defer kafkaProducer.Close()
+
+	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, s.log, s.Cfg)
 	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 

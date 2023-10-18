@@ -33,45 +33,9 @@ func NewConsumerGroup(brokers []string, groupID string, log logger.Logger) *cons
 	return &consumerGroup{Brokers: brokers, GroupID: groupID, log: log}
 }
 
-// GetNewKafkaReader create new kafka reader
-func (c *consumerGroup) GetNewKafkaReader(kafkaURL []string, groupTopics []string, groupID string) *kafka.Reader {
-	c.log.Infof("Listen to topic: %+v", groupTopics)
-	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:                kafkaURL,
-		GroupID:                groupID,
-		GroupTopics:            groupTopics,
-		MinBytes:               minBytes,
-		MaxBytes:               maxBytes,
-		QueueCapacity:          queueCapacity,
-		HeartbeatInterval:      heartbeatInterval,
-		CommitInterval:         commitInterval,
-		PartitionWatchInterval: partitionWatchInterval,
-		MaxAttempts:            maxAttempts,
-		MaxWait:                maxWait,
-		Dialer: &kafka.Dialer{
-			Timeout: dialTimeout,
-		},
-	})
-}
-
-// GetNewKafkaWriter create new kafka producer
-func (c *consumerGroup) GetNewKafkaWriter() *kafka.Writer {
-	w := &kafka.Writer{
-		Addr:         kafka.TCP(c.Brokers...),
-		Balancer:     &kafka.LeastBytes{},
-		RequiredAcks: writerRequiredAcks,
-		MaxAttempts:  writerMaxAttempts,
-		// Compression:  compress.Snappy,
-		ReadTimeout:  writerReadTimeout,
-		WriteTimeout: writerWriteTimeout,
-	}
-
-	return w
-}
-
 // ConsumeTopic start consumer group with given worker and pool size
 func (c *consumerGroup) ConsumeTopic(ctx context.Context, groupTopics []string, poolSize int, worker Worker) {
-	r := c.GetNewKafkaReader(c.Brokers, groupTopics, c.GroupID)
+	r := GetNewKafkaReader(c.Brokers, groupTopics, c.GroupID)
 
 	defer func() {
 		if err := r.Close(); err != nil {
