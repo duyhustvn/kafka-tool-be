@@ -53,6 +53,7 @@ func (handler *kafkaHandlers) SendMessageHandler() func(http.ResponseWriter, *ht
 			return
 		}
 
+		handler.log.Debugf("[SendMessageHandler] Start sending message")
 		successMsg, failedMsg := handler.kafkaSvc.SendMessage(ctx, body.Topic, body.Message, body.Quantity)
 
 		res := kafkamodel.SendMessageResponse{

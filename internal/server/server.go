@@ -12,6 +12,7 @@ import (
 	kafkarest "kafkatool/internal/modules/kafka/transport/res"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"sync"
 
 	kafkaclient "kafkatool/pkg/kafka"
@@ -76,6 +77,7 @@ func loadVars(c *config.Config) error {
 func (s *Server) Run() {
 	defer s.kafkaConn.Close()
 
+	s.router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 	apiRouter := s.router.PathPrefix("/api").Subrouter()
 
 	healthcheckSvc, _ := healthchecksvc.NewHealthCheckSvc(s.log)
