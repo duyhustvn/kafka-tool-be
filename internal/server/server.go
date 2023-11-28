@@ -31,22 +31,22 @@ type Server struct {
 
 // GetApp returns main app
 func GetApp() *Server {
-	env, err := config.Load()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Error loading config: %+v\n", err)
 	}
 
-	if err := loadVars(env); err != nil {
+	if err := loadVars(cfg); err != nil {
 		log.Fatalf("Error loading var: %+v\n", err)
 	}
 
-	log, err := logger.GetLogger(env)
+	log, err := logger.GetLogger(cfg)
 	if err != nil {
 		log.Fatalf("Error initialize custom logger: %s\n", err)
 	}
 
-	log.Debugf("Connecting to kafka at %+v", env.Kafka.Brokers)
-	kafkaConn, err := kafkaclient.NewKafkaConnection(context.Background(), env)
+	log.Debugf("Connecting to kafka at %+v", cfg.Kafka.Brokers)
+	kafkaConn, err := kafkaclient.NewKafkaConnection(context.Background(), cfg)
 	if err != nil {
 		log.Fatalf("Cannot connect to kafka %+v", err)
 	} else {
@@ -55,7 +55,7 @@ func GetApp() *Server {
 
 	return &Server{
 		router:    mux.NewRouter(),
-		Cfg:       *env,
+		Cfg:       *cfg,
 		log:       log,
 		kafkaConn: kafkaConn,
 	}
@@ -87,7 +87,9 @@ func (s *Server) Run() {
 	kafkaProducer := kafkaclient.NewProducer(s.Cfg.Kafka.Brokers, s.log)
 	defer kafkaProducer.Close()
 
-	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, s.log, s.Cfg)
+	kafkaConsumerGroup := kafkaclient.NewConsumerGroup(s.Cfg.Kafka.Brokers, s.Cfg.Kafka.GroupID, s.log)
+
+	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, s.log, s.Cfg)
 	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 

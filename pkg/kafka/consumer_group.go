@@ -17,9 +17,11 @@ type MessageProcessor interface {
 type Worker func(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int)
 
 type ConsumerGroup interface {
-	ConsumeTopic(ctx context.Context, cancel context.CancelFunc, groupID, topic string, poolSize int, worker Worker)
-	GetNewKafkaReader(kafkaURL []string, topic, groupID string) *kafka.Reader
-	GetNewKafkaWriter(topic string) *kafka.Writer
+	// ConsumeTopic(ctx context.Context, cancel context.CancelFunc, groupID, topic string, poolSize int, worker Worker)
+	// GetNewKafkaReader(kafkaURL []string, topic, groupID string) *kafka.Reader
+	// GetNewKafkaWriter(topic string) *kafka.Writer
+
+	ConsumeTopic(ctx context.Context, groupTopics []string, poolSize int, worker Worker)
 }
 
 type consumerGroup struct {
