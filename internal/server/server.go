@@ -8,6 +8,7 @@ import (
 	"kafkatool/internal/metrics"
 	healthchecksvc "kafkatool/internal/modules/healthcheck/service"
 	healthcheckrest "kafkatool/internal/modules/healthcheck/transport/rest"
+	kafkarepo "kafkatool/internal/modules/kafka/repository"
 	kafkasvc "kafkatool/internal/modules/kafka/service"
 	kafkarest "kafkatool/internal/modules/kafka/transport/res"
 	"log"
@@ -16,6 +17,7 @@ import (
 	"sync"
 
 	kafkaclient "kafkatool/pkg/kafka"
+	sqlclient "kafkatool/pkg/sql"
 
 	"github.com/gorilla/mux"
 	"github.com/segmentio/kafka-go"
@@ -74,7 +76,7 @@ func loadVars(c *config.Config) error {
 }
 
 // Run the https server
-func (s *Server) Run() {
+func (s *Server) Run() error {
 	defer s.kafkaConn.Close()
 
 	s.router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
@@ -84,12 +86,20 @@ func (s *Server) Run() {
 	healthcheckHandler := healthcheckrest.NewHealthCheckHandlers(apiRouter, s.log, s.Cfg, healthcheckSvc, s.metricsCollector)
 	healthcheckHandler.RegisterRouter()
 
+	sqliteClient, err := sqlclient.NewSqlite()
+	if err != nil {
+		return err
+	}
+	s.log.Info("Connected to sqlite successfully")
+
+	kafkaSqlRepo := kafkarepo.NewSqlRepo(sqliteClient, s.log)
+
 	kafkaProducer := kafkaclient.NewProducer(s.Cfg.Kafka.Brokers, s.log)
 	defer kafkaProducer.Close()
 
 	kafkaConsumerGroup := kafkaclient.NewConsumerGroup(s.Cfg.Kafka.Brokers, s.Cfg.Kafka.GroupID, s.log)
 
-	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, s.log, s.Cfg)
+	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, kafkaSqlRepo, s.log, s.Cfg)
 	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 
@@ -106,4 +116,6 @@ func (s *Server) Run() {
 	wg.Add(1)
 	go runHTTP(wg)
 	wg.Wait()
+
+	return nil
 }
