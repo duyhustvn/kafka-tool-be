@@ -1,8 +1,11 @@
 package kafkasvc
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
-func (svc *KafkaSvc) ListTopic() ([]string, error) {
+func (svc *KafkaSvc) ListTopic(ctx context.Context) ([]string, error) {
 	partitions, err := svc.kafkaConn.ReadPartitions()
 	if err != nil {
 		return nil, fmt.Errorf("cannot read partitions %+v", err)

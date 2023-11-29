@@ -32,7 +32,8 @@ func NewKafkaHandlers(router *mux.Router, log logger.Logger, cfg config.Config, 
 
 func (handler *kafkaHandlers) ListTopicHandler() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		topics, err := handler.kafkaSvc.ListTopic()
+		ctx := r.Context()
+		topics, err := handler.kafkaSvc.ListTopic(ctx)
 		if err != nil {
 			handler.log.Errorf("[ListTopicHandler] %+v", err)
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
