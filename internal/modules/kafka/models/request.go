@@ -1,6 +1,7 @@
 package kafkamodel
 
 type Request struct {
+	ID       string `json:"id,omitempty"`
 	Title    string `json:"title"`
 	Topic    string `json:"topic,omitempty"`
 	Quantity uint   `json:"quantity"`

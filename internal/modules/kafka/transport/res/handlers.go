@@ -100,7 +100,7 @@ func (handler *kafkaHandlers) SubscriberHandler() func(http.ResponseWriter, *htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		topic := mux.Vars(r)["topicName"]
+		topic := mux.Vars(r)["topic_name"]
 		if strings.TrimSpace(topic) == "" {
 			common.ResponseError(w, http.StatusBadRequest, nil, "topic cannot be nil")
 		}

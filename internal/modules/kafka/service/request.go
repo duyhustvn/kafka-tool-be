@@ -13,8 +13,15 @@ func (svc KafkaSvc) ListRequest(ctx context.Context) ([]kafkamodel.Request, erro
 	return requests, nil
 }
 
-func (svc KafkaSvc) SaveRequest(ctx context.Context, request kafkamodel.Request) error {
-	if err := svc.sqlRepo.SaveRequest(ctx, request); err != nil {
+func (svc KafkaSvc) CreateRequest(ctx context.Context, request kafkamodel.Request) error {
+	if err := svc.sqlRepo.CreateRequest(ctx, request); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (svc KafkaSvc) UpdateRequest(ctx context.Context, requestID int, request kafkamodel.Request) error {
+	if err := svc.sqlRepo.UpdateRequest(ctx, requestID, request); err != nil {
 		return err
 	}
 	return nil

@@ -7,5 +7,6 @@ import (
 
 type ISqlRepo interface {
 	ListRequest(ctx context.Context) ([]kafkamodel.Request, error)
-	SaveRequest(ctx context.Context, request kafkamodel.Request) error
+	CreateRequest(ctx context.Context, request kafkamodel.Request) error
+	UpdateRequest(ctx context.Context, requestID int, request kafkamodel.Request) error
 }

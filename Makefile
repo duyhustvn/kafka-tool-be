@@ -12,7 +12,11 @@ staticcheck:
 
 .PHONY: build
 build:
-	go build -o $(OBJECTS) cmd/service/main.go
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o $(OBJECTS) cmd/service/main.go
+
+.PHONY: run
+run:
+	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o $(OBJECTS) cmd/service/main.go && ./$(OBJECTS)
 
 .PHONY: docker-build
 docker-build:

@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  kafkatool-be:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production-stage
+    image: kafkatool:v1
+    container_name: kafkatool-be
+    ports:
+      - 9000:9000
+    environment:
+      - HTTPS_PORT=9000
+      - LOG_LEVEL=DEBUG
+      - LOG_PATH=logs/app.log
+      - STATSD_ADDR=127.0.0.1:8125
+      - STATSD_PREFIX=boilerplate_prefix
+      - STATSD_FLUSH_PERIOD=100
+      - KAFKA_BROKERS=172.17.0.1:9092
+      - KAFKA_GROUP_ID=kafkatool
+      - KAFKA_POOL_SIZE=30
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+    volumes:
+      - kafkatool_data:/src/kafka_tool.db
+volumes:
+  kafkatool_data:
+    driver: local
