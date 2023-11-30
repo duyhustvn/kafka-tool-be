@@ -26,7 +26,7 @@ services:
       options:
         max-size: "10m"
     volumes:
-      - kafkatool_data:/src/kafka_tool.db
+      - kafkatool_data:/src/data/
 volumes:
   kafkatool_data:
     driver: local

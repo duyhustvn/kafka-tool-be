@@ -8,13 +8,18 @@ import (
 )
 
 func NewSqlite() (*sqlx.DB, error) {
-	db, err := sqlx.Open("sqlite3", "kafka_tool.db")
+	// if _, err := os.Stat("./data"); os.IsNotExist(err) {
+	// 	if err := os.Mkdir("./data", 0777); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+	db, err := sqlx.Open("sqlite3", "./data/kafka_tool.db")
 	if err != nil {
 		return nil, fmt.Errorf("cannot connect to sqlite %+v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("cannot ping sqlite %+v", err)
+		return nil, fmt.Errorf("failed to ping sqlite: %+v", err)
 	}
 
 	var schema = `

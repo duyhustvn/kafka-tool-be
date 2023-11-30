@@ -21,5 +21,6 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o main.o /src/cmd/service/ma
 FROM alpine:3.18.2 AS production-stage
 WORKDIR /src
 RUN mkdir -p /src/logs
+RUN mkdir -p /src/data
 COPY --from=builder /src/main.o /src
 CMD ["/src/main.o"]

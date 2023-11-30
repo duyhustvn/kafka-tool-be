@@ -2,4 +2,5 @@
 *.o
 .env
 logs/*
+data
 *.db
