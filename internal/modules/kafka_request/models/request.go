@@ -1,4 +1,4 @@
-package kafkamodel
+package kafkareqmodel
 
 type Request struct {
 	ID       string `json:"id,omitempty"`

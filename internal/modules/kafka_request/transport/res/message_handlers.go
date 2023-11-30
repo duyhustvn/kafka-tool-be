@@ -1,9 +1,9 @@
-package kafkarest
+package kafkarequestres
 
 import (
 	"encoding/json"
 	"kafkatool/internal/common"
-	kafkamodel "kafkatool/internal/modules/kafka/models"
+	kafkareqmodel "kafkatool/internal/modules/kafka_request/models"
 	"net/http"
 	"strconv"
 
@@ -19,7 +19,7 @@ func (handler *kafkaHandlers) ListRequestHandler() func(http.ResponseWriter, *ht
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
-		res := kafkamodel.ListRequestResponse{
+		res := kafkareqmodel.ListRequestResponse{
 			Requests: requests,
 		}
 
@@ -31,7 +31,7 @@ func (handler *kafkaHandlers) CreateRequestHandler() func(http.ResponseWriter, *
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		var kkrequest kafkamodel.Request
+		var kkrequest kafkareqmodel.Request
 		if err := json.NewDecoder(r.Body).Decode(&kkrequest); err != nil {
 			handler.log.Errorf("[CreateRequestHandler] decode request body %+v", err)
 			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())
@@ -68,7 +68,7 @@ func (handler *kafkaHandlers) UpdateRequestHandler() func(http.ResponseWriter, *
 			return
 		}
 
-		var kkrequest kafkamodel.Request
+		var kkrequest kafkareqmodel.Request
 		if err := json.NewDecoder(r.Body).Decode(&kkrequest); err != nil {
 			handler.log.Errorf("[UpdateRequestHandler] decode request body %+v", err)
 			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())

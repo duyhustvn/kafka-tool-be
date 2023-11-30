@@ -8,9 +8,11 @@ import (
 	"kafkatool/internal/metrics"
 	healthchecksvc "kafkatool/internal/modules/healthcheck/service"
 	healthcheckrest "kafkatool/internal/modules/healthcheck/transport/rest"
-	kafkarepo "kafkatool/internal/modules/kafka/repository"
 	kafkasvc "kafkatool/internal/modules/kafka/service"
 	kafkarest "kafkatool/internal/modules/kafka/transport/res"
+	kafkareqrepo "kafkatool/internal/modules/kafka_request/repository"
+	kafkareqsvc "kafkatool/internal/modules/kafka_request/service"
+	kafkarequestres "kafkatool/internal/modules/kafka_request/transport/res"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -92,14 +94,17 @@ func (s *Server) Run() error {
 	}
 	s.log.Info("Connected to sqlite successfully")
 
-	kafkaSqlRepo := kafkarepo.NewSqlRepo(sqliteClient, s.log)
+	kafkaReqSqlRepo := kafkareqrepo.NewSqlRepo(sqliteClient, s.log)
+	kafkaReqSvc := kafkareqsvc.NewKafkaRequestSvc(kafkaReqSqlRepo, s.log, s.Cfg)
+	kafkReqHandler := kafkarequestres.NewKafkaRequestHandlers(apiRouter, s.log, s.Cfg, kafkaReqSvc, s.metricsCollector)
+	kafkReqHandler.RegisterRouter()
 
 	kafkaProducer := kafkaclient.NewProducer(s.Cfg.Kafka.Brokers, s.log)
 	defer kafkaProducer.Close()
 
 	kafkaConsumerGroup := kafkaclient.NewConsumerGroup(s.Cfg.Kafka.Brokers, s.Cfg.Kafka.GroupID, s.log)
 
-	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, kafkaSqlRepo, s.log, s.Cfg)
+	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, s.log, s.Cfg)
 	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 
