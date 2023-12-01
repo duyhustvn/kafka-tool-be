@@ -6,6 +6,10 @@ import (
 )
 
 func (svc *KafkaSvc) ListTopic(ctx context.Context) ([]string, error) {
+	if svc.kafkaConn == nil {
+		return nil, fmt.Errorf("no connection to kafka brokers")
+	}
+
 	partitions, err := svc.kafkaConn.ReadPartitions()
 	if err != nil {
 		return nil, fmt.Errorf("cannot read partitions %+v", err)

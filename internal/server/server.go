@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"kafkatool/internal/config"
 	"kafkatool/internal/logger"
@@ -18,16 +17,13 @@ import (
 	_ "net/http/pprof"
 	"sync"
 
-	kafkaclient "kafkatool/pkg/kafka"
 	sqlclient "kafkatool/pkg/sql"
 
 	"github.com/gorilla/mux"
-	"github.com/segmentio/kafka-go"
 )
 
 type Server struct {
 	router           *mux.Router
-	kafkaConn        *kafka.Conn
 	Cfg              config.Config
 	log              logger.Logger
 	metricsCollector metrics.IMetricCollector
@@ -50,18 +46,11 @@ func GetApp() *Server {
 	}
 
 	log.Debugf("Connecting to kafka at %+v", cfg.Kafka.Brokers)
-	kafkaConn, err := kafkaclient.NewKafkaConnection(context.Background(), cfg)
-	if err != nil {
-		log.Fatalf("Cannot connect to kafka %+v", err)
-	} else {
-		log.Infof("Connected to kafka")
-	}
 
 	return &Server{
-		router:    mux.NewRouter(),
-		Cfg:       *cfg,
-		log:       log,
-		kafkaConn: kafkaConn,
+		router: mux.NewRouter(),
+		Cfg:    *cfg,
+		log:    log,
 	}
 }
 
@@ -79,8 +68,6 @@ func loadVars(c *config.Config) error {
 
 // Run the https server
 func (s *Server) Run() error {
-	defer s.kafkaConn.Close()
-
 	s.router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 	apiRouter := s.router.PathPrefix("/api").Subrouter()
 
@@ -99,13 +86,8 @@ func (s *Server) Run() error {
 	kafkReqHandler := kafkarequestres.NewKafkaRequestHandlers(apiRouter, s.log, s.Cfg, kafkaReqSvc, s.metricsCollector)
 	kafkReqHandler.RegisterRouter()
 
-	kafkaProducer := kafkaclient.NewProducer(s.Cfg.Kafka.Brokers, s.log)
-	defer kafkaProducer.Close()
-
-	kafkaConsumerGroup := kafkaclient.NewConsumerGroup(s.Cfg.Kafka.Brokers, s.Cfg.Kafka.GroupID, s.log)
-
-	kafkaSvc := kafkasvc.NewKafkaSvc(s.kafkaConn, kafkaProducer, kafkaConsumerGroup, s.log, s.Cfg)
-	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, s.Cfg, kafkaSvc, s.metricsCollector)
+	kafkaSvc := kafkasvc.NewKafkaSvc(nil, nil, nil, s.log, s.Cfg)
+	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, &s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 
 	runHTTP := func(wg *sync.WaitGroup) {

@@ -2,6 +2,7 @@ package kafkasvc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -26,7 +27,11 @@ func (svc *KafkaSvc) worker(ctx context.Context, workerID int, lb chan int, topi
 	}
 }
 
-func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, numMessages int) (int, int) {
+func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, numMessages int) (int, int, error) {
+	if !svc.IsConnectedToKafkaBrokers(ctx) {
+		return 0, 0, errors.New("no kafka connection")
+	}
+
 	numWorkers := 10
 
 	successChan := make(chan int)
@@ -63,5 +68,5 @@ func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, 
 			successMsg++
 		}
 	}
-	return successMsg, failedMsg
+	return successMsg, failedMsg, nil
 }

@@ -15,12 +15,17 @@ func (handler *kafkaHandlers) SendMessageHandler() func(http.ResponseWriter, *ht
 
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			handler.log.Errorf("[SendMessageHandler] %+v", err)
-			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
+			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())
 			return
 		}
 
 		handler.log.Debugf("[SendMessageHandler] Start sending message")
-		successMsg, failedMsg := handler.kafkaSvc.SendMessage(ctx, body.Topic, body.Message, body.Quantity)
+		successMsg, failedMsg, err := handler.kafkaSvc.SendMessage(ctx, body.Topic, body.Message, body.Quantity)
+		if err != nil {
+			handler.log.Errorf("[SendMessageHandler] %+v", err)
+			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())
+			return
+		}
 
 		res := kafkamodel.SendMessageResponse{
 			TotalMessage: body.Quantity,

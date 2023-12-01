@@ -13,10 +13,10 @@ type kafkaHandlers struct {
 	router           *mux.Router
 	kafkaSvc         kafkasvc.KafkaSvc
 	log              logger.Logger
-	cfg              config.Config
+	cfg              *config.Config
 	metricsCollector metrics.IMetricCollector
 }
 
-func NewKafkaHandlers(router *mux.Router, log logger.Logger, cfg config.Config, kafkaSvc *kafkasvc.KafkaSvc, metricCollector metrics.IMetricCollector) *kafkaHandlers {
+func NewKafkaHandlers(router *mux.Router, log logger.Logger, cfg *config.Config, kafkaSvc *kafkasvc.KafkaSvc, metricCollector metrics.IMetricCollector) *kafkaHandlers {
 	return &kafkaHandlers{router: router, log: log, cfg: cfg, kafkaSvc: *kafkaSvc, metricsCollector: metricCollector}
 }
