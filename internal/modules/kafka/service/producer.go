@@ -29,7 +29,7 @@ func (svc *KafkaSvc) worker(ctx context.Context, workerID int, lb chan int, topi
 
 func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, numMessages int) (int, int, error) {
 	if !svc.IsConnectedToKafkaBrokers(ctx) {
-		return 0, 0, errors.New("no kafka connection")
+		return 0, 0, errors.New("there is no kafka connection. Please reconnect again")
 	}
 
 	numWorkers := 10
