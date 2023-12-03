@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production-stage
-    image: kafkatool:v1
+    image: kafkatool:v0.0.1
     container_name: kafkatool-be
     ports:
       - 9000:9000
