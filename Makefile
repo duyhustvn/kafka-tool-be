@@ -1,7 +1,7 @@
 OBJECTS=server.out
 
-IMG=kafkatool
-IMG_TAG=v0.0.1
+IMG=kafkatool-be
+IMG_TAG=0.1
 
 CONTAINER_REGISTRY = docker.io
 USER = duyle95
