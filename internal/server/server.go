@@ -69,6 +69,7 @@ func loadVars(c *config.Config) error {
 // Run the https server
 func (s *Server) Run() error {
 	s.router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
+
 	apiRouter := s.router.PathPrefix("/api").Subrouter()
 
 	healthcheckSvc, _ := healthchecksvc.NewHealthCheckSvc(s.log)

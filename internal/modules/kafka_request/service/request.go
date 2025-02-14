@@ -13,15 +13,23 @@ func (svc KafkaSvc) ListRequest(ctx context.Context) ([]kafkareqmodel.Request, e
 	return requests, nil
 }
 
-func (svc KafkaSvc) CreateRequest(ctx context.Context, request kafkareqmodel.Request) error {
-	if err := svc.sqlRepo.CreateRequest(ctx, request); err != nil {
+func (svc KafkaSvc) CreateRequest(ctx context.Context, request kafkareqmodel.Request) (int64 /*insertedId*/, error) {
+	insertedId, err := svc.sqlRepo.CreateRequest(ctx, request)
+	if err != nil {
+		return -1, err
+	}
+	return insertedId, nil
+}
+
+func (svc KafkaSvc) UpdateRequest(ctx context.Context, requestID int, request kafkareqmodel.Request) error {
+	if err := svc.sqlRepo.UpdateRequest(ctx, requestID, request); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (svc KafkaSvc) UpdateRequest(ctx context.Context, requestID int, request kafkareqmodel.Request) error {
-	if err := svc.sqlRepo.UpdateRequest(ctx, requestID, request); err != nil {
+func (svc KafkaSvc) DeleteRequest(ctx context.Context, requestID int) error {
+	if err := svc.sqlRepo.DeleteRequest(ctx, requestID); err != nil {
 		return err
 	}
 	return nil

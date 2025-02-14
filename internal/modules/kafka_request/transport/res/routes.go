@@ -8,4 +8,5 @@ func (handler *kafkaHandlers) RegisterRouter() {
 	s.HandleFunc("/requests", handler.ListRequestHandler()).Methods(http.MethodGet)
 	s.HandleFunc("/requests", handler.CreateRequestHandler()).Methods(http.MethodPost)
 	s.HandleFunc("/requests/{request_id}", handler.UpdateRequestHandler()).Methods(http.MethodPut)
+	s.HandleFunc("/requests/{request_id}", handler.DeleteRequestHandler()).Methods(http.MethodDelete)
 }

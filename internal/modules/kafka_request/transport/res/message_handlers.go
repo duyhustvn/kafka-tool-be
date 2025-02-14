@@ -46,13 +46,14 @@ func (handler *kafkaHandlers) CreateRequestHandler() func(http.ResponseWriter, *
 
 		handler.log.Debugf("kkrequest: %+v", kkrequest)
 
-		if err := handler.kafkaSvc.CreateRequest(ctx, kkrequest); err != nil {
+		newRequestId, err := handler.kafkaSvc.CreateRequest(ctx, kkrequest)
+		if err != nil {
 			handler.log.Errorf("[CreateRequestHandler] %+v", err)
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}
 
-		common.ResponseOk(w, http.StatusOK, nil)
+		common.ResponseOk(w, http.StatusOK, kafkareqmodel.CreateNewRequestResponse{NewRequestId: newRequestId})
 	}
 }
 
@@ -85,6 +86,27 @@ func (handler *kafkaHandlers) UpdateRequestHandler() func(http.ResponseWriter, *
 
 		if err := handler.kafkaSvc.UpdateRequest(ctx, requestID, kkrequest); err != nil {
 			handler.log.Errorf("[UpdateRequestHandler] %+v", err)
+			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
+			return
+		}
+
+		common.ResponseOk(w, http.StatusOK, nil)
+	}
+}
+
+func (handler *kafkaHandlers) DeleteRequestHandler() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		requestIDStr := mux.Vars(r)["request_id"]
+		requestID, err := strconv.Atoi(requestIDStr)
+		if err != nil {
+			handler.log.Errorf("[DeleteRequestHandler] invalid request id %+v", err)
+			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())
+			return
+		}
+		if err := handler.kafkaSvc.DeleteRequest(ctx, requestID); err != nil {
+			handler.log.Errorf("[DeleteRequestHandler] %+v", err)
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
 			return
 		}

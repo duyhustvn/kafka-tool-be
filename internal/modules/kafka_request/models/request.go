@@ -16,3 +16,7 @@ func (r Request) Validator() error {
 type ListRequestResponse struct {
 	Requests []Request `json:"requests"`
 }
+
+type CreateNewRequestResponse struct {
+	NewRequestId int64 `json:"new_request_id"`
+}
