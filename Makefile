@@ -1,7 +1,7 @@
 OBJECTS=server.out
 
 IMG=kafkatool-be
-IMG_TAG=0.1
+IMG_TAG=1.0.0
 
 CONTAINER_REGISTRY = docker.io
 USER = duyle95
@@ -24,6 +24,7 @@ docker-build:
 
 .PHONY: docker-push
 docker-push:
+	docker image tag $(IMG):$(IMG_TAG) $(CONTAINER_REGISTRY)/$(USER)/$(IMG):$(IMG_TAG)
 	docker push $(CONTAINER_REGISTRY)/$(USER)/$(IMG):$(IMG_TAG)
 
 .PHONY: clean
