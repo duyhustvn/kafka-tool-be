@@ -19,7 +19,7 @@ func NewSqlRepo(client *sqlx.DB, log logger.Logger) *SqlRepo {
 }
 
 func (s *SqlRepo) ListRequest(ctx context.Context) ([]kafkareqmodel.Request, error) {
-	query := `SELECT id, title, topic, quantity, type, message FROM requests`
+	query := `SELECT id, title, topic, quantity, type, message, header, key FROM requests`
 
 	rows, err := s.sqlClient.Queryx(query)
 	if err != nil {
