@@ -38,9 +38,9 @@ func (s *SqlRepo) ListRequest(ctx context.Context) ([]kafkareqmodel.Request, err
 
 func (s *SqlRepo) CreateRequest(ctx context.Context, request kafkareqmodel.Request) (int64 /*insertedId*/, error) {
 	query := `INSERT INTO requests
-					(title, topic, quantity, type, message)
+					(title, topic, quantity, type, message, header, key)
 				VALUES
-					(:title, :topic, :quantity, :type, :message)
+					(:title, :topic, :quantity, :type, :message, :header, :key)
 			`
 	result, err := s.sqlClient.NamedExec(query, &request)
 	if err != nil {
@@ -57,7 +57,7 @@ func (s *SqlRepo) CreateRequest(ctx context.Context, request kafkareqmodel.Reque
 func (s *SqlRepo) UpdateRequest(ctx context.Context, requestID int, request kafkareqmodel.Request) error {
 	query := `UPDATE requests
 				SET
-					title=:title, topic=:topic, quantity=:quantity, type=:type, message=:message
+					title=:title, topic=:topic, quantity=:quantity, type=:type, message=:message, header=:header, key=:key
 				WHERE
 					id = :id
 			`
@@ -68,6 +68,8 @@ func (s *SqlRepo) UpdateRequest(ctx context.Context, requestID int, request kafk
 		"quantity": request.Quantity,
 		"type":     request.Type,
 		"message":  request.Message,
+		"header":   request.Header,
+		"key":      request.Key,
 	}
 	_, err := s.sqlClient.NamedExec(query, arg)
 	if err != nil {

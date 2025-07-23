@@ -44,7 +44,7 @@ func (handler *kafkaHandlers) CreateRequestHandler() func(http.ResponseWriter, *
 			return
 		}
 
-		handler.log.Debugf("kkrequest: %+v", kkrequest)
+		handler.log.Debugf("[CreateRequestHandler] kkrequest: %+v", kkrequest)
 
 		newRequestId, err := handler.kafkaSvc.CreateRequest(ctx, kkrequest)
 		if err != nil {
@@ -82,7 +82,7 @@ func (handler *kafkaHandlers) UpdateRequestHandler() func(http.ResponseWriter, *
 			return
 		}
 
-		handler.log.Debugf("kkrequest: %+v", kkrequest)
+		handler.log.Debugf("[UpdateRequestHandler] kkrequest: %+v", kkrequest)
 
 		if err := handler.kafkaSvc.UpdateRequest(ctx, requestID, kkrequest); err != nil {
 			handler.log.Errorf("[UpdateRequestHandler] %+v", err)

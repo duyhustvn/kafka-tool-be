@@ -29,7 +29,9 @@ func NewSqlite() (*sqlx.DB, error) {
 		topic varchar(255) not null,
 		quantity integer default 1,
 		type varchar(30) not null,
-		message text not null
+		message text not null,
+		header text,
+		key text
 	);
 	`
 	if _, err := db.Exec(schema); err != nil {

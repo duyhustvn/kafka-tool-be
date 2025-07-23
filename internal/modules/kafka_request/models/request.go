@@ -7,6 +7,8 @@ type Request struct {
 	Quantity uint   `json:"quantity"`
 	Type     string `json:"type"` // json, text ...
 	Message  string `json:"message"`
+	Header   string `json:"header"`
+	Key      string `json:"key"`
 }
 
 func (r Request) Validator() error {
