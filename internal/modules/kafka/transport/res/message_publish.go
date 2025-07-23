@@ -20,7 +20,7 @@ func (handler *kafkaHandlers) SendMessageHandler() func(http.ResponseWriter, *ht
 		}
 
 		handler.log.Debugf("[SendMessageHandler] Start sending message")
-		successMsg, failedMsg, err := handler.kafkaSvc.SendMessage(ctx, body.Topic, body.Message, body.Quantity)
+		successMsg, failedMsg, err := handler.kafkaSvc.SendMessage(ctx, body.Topic, body.Message, body.Header, body.Key, body.Quantity)
 		if err != nil {
 			handler.log.Errorf("[SendMessageHandler] %+v", err)
 			common.ResponseError(w, http.StatusBadRequest, nil, err.Error())

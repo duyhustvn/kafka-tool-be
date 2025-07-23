@@ -3,6 +3,7 @@ package kafkasvc
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -27,7 +28,7 @@ func (svc *KafkaSvc) worker(ctx context.Context, workerID int, lb chan int, topi
 	}
 }
 
-func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, numMessages int) (int, int, error) {
+func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg, msgHeader, msgKey string, numMessages int) (int, int, error) {
 	if !svc.IsConnectedToKafkaBrokers(ctx) {
 		return 0, 0, errors.New("there is no kafka connection. Please reconnect again")
 	}
@@ -43,7 +44,16 @@ func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg string, 
 		Topic: topic,
 		Value: []byte(msg),
 	}
-	svc.log.Debugf("message: %s", msg)
+
+	// if strings.TrimSpace(msgHeader) != "" {
+	// 	msgs.Headers = append(msgs.Headers, )
+	// }
+
+	if strings.TrimSpace(msgKey) != "" {
+		msgs.Key = []byte(msgKey)
+	}
+
+	svc.log.Debugf("message: %+v", msgs)
 
 	for i := 0; i < numWorkers; i++ {
 		go svc.worker(ctx, i, lb, topic, msgs, successChan, failedChan)
