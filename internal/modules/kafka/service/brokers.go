@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"kafkatool/internal/config"
 	kafkaclient "kafkatool/pkg/kafka"
-	"strings"
 )
 
-func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers string, cfg *config.Kafka) error {
-	newBrokers := strings.Split(brokers, ",")
-	cfg.Brokers = newBrokers
+func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, cfg *config.Kafka) error {
+	cfg.Brokers = brokers
 
 	// close old kafka connection
 	if svc.kafkaConn != nil {
