@@ -12,6 +12,7 @@ import (
 	kafkareqrepo "kafkatool/internal/modules/kafka_request/repository"
 	kafkareqsvc "kafkatool/internal/modules/kafka_request/service"
 	kafkarequestres "kafkatool/internal/modules/kafka_request/transport/res"
+	"kafkatool/internal/modules/middlewares"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -91,11 +92,13 @@ func (s *Server) Run() error {
 	kafkaHandler := kafkarest.NewKafkaHandlers(apiRouter, s.log, &s.Cfg, kafkaSvc, s.metricsCollector)
 	kafkaHandler.RegisterRouter()
 
+	loggedRouter := middlewares.LoggingMiddleware(s.router)
+
 	runHTTP := func(wg *sync.WaitGroup) {
 		defer wg.Done()
 		log.Printf("Server listening on port: %s ...", s.Cfg.Server.Port)
 
-		if err := http.ListenAndServe(fmt.Sprintf(":%s", s.Cfg.Server.Port), s.router); err != nil {
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", s.Cfg.Server.Port), loggedRouter); err != nil {
 			log.Fatal("ListenAndServe error: ", err)
 		}
 	}

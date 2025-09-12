@@ -15,6 +15,7 @@ func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, 
 		svc.kafkaConn.Close()
 	}
 
+	svc.log.Infof("Trying to connect to kafka brokers: %+v", brokers)
 	kafkaConn, err := kafkaclient.NewKafkaConnection(ctx, cfg)
 	if err != nil {
 		// reset kafka connection
@@ -26,6 +27,7 @@ func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, 
 		return fmt.Errorf("failed to connect to kafka brokers %+v", err)
 	}
 
+	svc.log.Infof("Connected to kafka brokers: %+v success", brokers)
 	svc.kafkaConn = kafkaConn
 	svc.kafkaProducer = kafkaclient.NewProducer(cfg.Brokers, svc.log)
 	svc.kafkaConsumerGroup = kafkaclient.NewConsumerGroup(cfg.Brokers, cfg.GroupID, svc.log)
