@@ -2,6 +2,7 @@ package kafkaclient
 
 import (
 	"context"
+	"kafkatool/internal/config"
 	"kafkatool/internal/logger"
 	"sync"
 
@@ -25,19 +26,32 @@ type ConsumerGroup interface {
 }
 
 type consumerGroup struct {
-	Brokers []string
-	GroupID string
-	log     logger.Logger
+	kafkaCfg config.Kafka
+	GroupID  string
+	log      logger.Logger
 }
 
 // NewConsumerGroup kafka consumer group constructor
-func NewConsumerGroup(brokers []string, groupID string, log logger.Logger) *consumerGroup {
-	return &consumerGroup{Brokers: brokers, GroupID: groupID, log: log}
+func NewConsumerGroup(
+	kafkaCfg config.Kafka,
+	groupID string,
+	log logger.Logger,
+) *consumerGroup {
+	return &consumerGroup{
+		kafkaCfg: kafkaCfg,
+		GroupID:  groupID,
+		log:      log,
+	}
 }
 
 // ConsumeTopic start consumer group with given worker and pool size
-func (c *consumerGroup) ConsumeTopic(ctx context.Context, groupTopics []string, poolSize int, worker Worker) {
-	r := GetNewKafkaReader(c.Brokers, groupTopics, c.GroupID)
+func (c *consumerGroup) ConsumeTopic(
+	ctx context.Context,
+	groupTopics []string,
+	poolSize int,
+	worker Worker,
+) {
+	r := GetNewKafkaReader(c.kafkaCfg, groupTopics, c.GroupID)
 
 	defer func() {
 		if err := r.Close(); err != nil {

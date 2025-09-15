@@ -6,7 +6,9 @@ import (
 )
 
 type BrokersConfig struct {
-	Url string `json:"brokers_url"`
+	Url      string `json:"brokers_url"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func (bc BrokersConfig) Validator() error {

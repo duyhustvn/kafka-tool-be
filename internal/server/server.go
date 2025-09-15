@@ -46,8 +46,6 @@ func GetApp() *Server {
 		log.Fatalf("Error initialize custom logger: %s\n", err)
 	}
 
-	log.Debugf("Connecting to kafka at %+v", cfg.Kafka.Brokers)
-
 	return &Server{
 		router: mux.NewRouter(),
 		Cfg:    *cfg,
@@ -59,7 +57,6 @@ func loadVars(c *config.Config) error {
 	c.Env.GetKeys()
 	c.Logger.GetLoggerEnv()
 	c.Server.GetHTTPSEnv()
-	c.Kafka.GetKafkaEnv()
 	if _, err := c.Monitoring.GetMonitoringEnv(); err != nil {
 		return err
 	}

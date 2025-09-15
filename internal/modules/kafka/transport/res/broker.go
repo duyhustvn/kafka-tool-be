@@ -5,7 +5,6 @@ import (
 	"kafkatool/internal/common"
 	kafkamodel "kafkatool/internal/modules/kafka/models"
 	"net/http"
-	"strings"
 )
 
 func (handler *kafkaHandlers) ConnectKafkaBrokerHandler() func(http.ResponseWriter, *http.Request) {
@@ -25,9 +24,7 @@ func (handler *kafkaHandlers) ConnectKafkaBrokerHandler() func(http.ResponseWrit
 			return
 		}
 
-		brokersUrl := body.Url
-		brokers := strings.Split(brokersUrl, ",")
-		if err := handler.kafkaSvc.ConnectKafkaBrokers(ctx, brokers, &handler.cfg.Kafka); err != nil {
+		if err := handler.kafkaSvc.ConnectKafkaBrokers(ctx, body); err != nil {
 			handler.log.Errorf("[UpdateBrokerHandler] %+v", err)
 			common.ResponseError(w, http.StatusInternalServerError, nil, err.Error())
 			return

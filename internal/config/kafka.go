@@ -6,9 +6,12 @@ import (
 )
 
 type Kafka struct {
-	Brokers  []string
-	GroupID  string
-	PoolSize int
+	Brokers       []string
+	Username      string
+	Password      string
+	SaslMechanism string
+	GroupID       string
+	PoolSize      int
 }
 
 func (k *Kafka) GetKafkaEnv() *Kafka {

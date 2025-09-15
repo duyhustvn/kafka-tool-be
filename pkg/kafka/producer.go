@@ -2,6 +2,7 @@ package kafkaclient
 
 import (
 	"context"
+	"kafkatool/internal/config"
 	"kafkatool/internal/logger"
 
 	"github.com/segmentio/kafka-go"
@@ -13,13 +14,16 @@ type Producer interface {
 }
 
 type producer struct {
-	Brokers []string
-	log     logger.Logger
-	w       *kafka.Writer
+	w *kafka.Writer
 }
 
-func NewProducer(brokers []string, log logger.Logger) *producer {
-	return &producer{Brokers: brokers, log: log, w: GetNewKafkaWriter(brokers)}
+func NewProducer(
+	kafkaCfg config.Kafka,
+	log logger.Logger,
+) *producer {
+	return &producer{
+		w: GetNewKafkaWriter(kafkaCfg),
+	}
 }
 
 func (p *producer) PublishMessage(ctx context.Context, msgs ...kafka.Message) error {

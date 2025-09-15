@@ -17,10 +17,10 @@ func (svc *KafkaSvc) produceMessage(ctx context.Context, workerID int, topic str
 }
 
 func (svc *KafkaSvc) worker(ctx context.Context, workerID int, lb chan int, topic string, msgs kafka.Message, successChan chan int, failedChan chan int) {
-	for _ = range lb {
+	for range lb {
 		// svc.log.Debugf("Message ID: %d", msgIdx)
 		if err := svc.produceMessage(ctx, workerID, topic, msgs); err != nil {
-			svc.log.Errorf("send message to topic: %s failed %+v", topic, err)
+			svc.log.Errorf("send message to topic: %s failed %+v", topic, err.Error())
 			failedChan <- 1
 		} else {
 			successChan <- 1
@@ -53,7 +53,7 @@ func (svc *KafkaSvc) SendMessage(ctx context.Context, topic string, msg, msgHead
 		msgs.Key = []byte(msgKey)
 	}
 
-	svc.log.Debugf("message: %+v", msgs)
+	svc.log.Debugf("message: %s", msgs.Value)
 
 	for i := 0; i < numWorkers; i++ {
 		go svc.worker(ctx, i, lb, topic, msgs, successChan, failedChan)

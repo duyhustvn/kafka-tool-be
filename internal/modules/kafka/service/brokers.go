@@ -4,11 +4,27 @@ import (
 	"context"
 	"fmt"
 	"kafkatool/internal/config"
+	kafkamodel "kafkatool/internal/modules/kafka/models"
 	kafkaclient "kafkatool/pkg/kafka"
+	"strings"
 )
 
-func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, cfg *config.Kafka) error {
-	cfg.Brokers = brokers
+func (svc *KafkaSvc) ConnectKafkaBrokers(
+	ctx context.Context,
+	body kafkamodel.BrokersConfig,
+) error {
+	brokersUrl := body.Url
+	brokers := strings.Split(brokersUrl, ",")
+
+	kafkaCfg := config.Kafka{
+		Brokers: brokers,
+	}
+
+	if strings.TrimSpace(body.Username) != "" && strings.TrimSpace(body.Password) != "" {
+		kafkaCfg.Username = body.Username
+		kafkaCfg.Password = body.Password
+		kafkaCfg.SaslMechanism = "SASL_PLAIN"
+	}
 
 	// close old kafka connection
 	if svc.kafkaConn != nil {
@@ -16,7 +32,7 @@ func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, 
 	}
 
 	svc.log.Infof("Trying to connect to kafka brokers: %+v", brokers)
-	kafkaConn, err := kafkaclient.NewKafkaConnection(ctx, cfg)
+	kafkaConn, err := kafkaclient.NewKafkaConnection(ctx, &kafkaCfg)
 	if err != nil {
 		// reset kafka connection
 
@@ -27,10 +43,10 @@ func (svc *KafkaSvc) ConnectKafkaBrokers(ctx context.Context, brokers []string, 
 		return fmt.Errorf("failed to connect to kafka brokers %+v", err)
 	}
 
-	svc.log.Infof("Connected to kafka brokers: %+v success", brokers)
 	svc.kafkaConn = kafkaConn
-	svc.kafkaProducer = kafkaclient.NewProducer(cfg.Brokers, svc.log)
-	svc.kafkaConsumerGroup = kafkaclient.NewConsumerGroup(cfg.Brokers, cfg.GroupID, svc.log)
+	svc.kafkaProducer = kafkaclient.NewProducer(kafkaCfg, svc.log)
+	svc.kafkaConsumerGroup = kafkaclient.NewConsumerGroup(kafkaCfg, "kafka-tool", svc.log)
+	svc.log.Infof("Connected to kafka brokers: %+v success", brokers)
 
 	return nil
 }
